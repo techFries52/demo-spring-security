@@ -32,9 +32,9 @@ public class AppUserServiceImpl implements AppUserService, UserDetailsService {
         } else {
             log.info("user {} found in the database!", username);
         }
-        Collection<SimpleGrantedAuthority> authorites = new ArrayList<>();
+        Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
         user.getRoles().forEach(role -> {
-            authorites.add(new SimpleGrantedAuthority(role.getName()));
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
         });
 
         return new org.springframework.security.core.userdetails.User(user.getName(),user.getPassword(), authorities);
