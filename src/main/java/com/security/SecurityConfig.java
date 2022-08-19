@@ -27,9 +27,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // disable cross site request forgery, springs default session?
         http.csrf().disable();
+        // sets session creation policy to stateless
         http.sessionManagement().sessionCreationPolicy(STATELESS);
+        // lets everyone access this application
         http.authorizeRequests().anyRequest().permitAll();
+        // adds filter so we can check who is logging in
         http.addFilter(new CustomAuthFilter(authenticationManagerBean()));
     }
 

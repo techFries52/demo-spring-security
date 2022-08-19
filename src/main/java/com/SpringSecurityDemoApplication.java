@@ -24,6 +24,7 @@ public class SpringSecurityDemoApplication {
 		return new BCryptPasswordEncoder();
 	}
 
+	// runs after app launch to add to database
 	@Bean
 	CommandLineRunner run(AppUserService userService){
 		return args -> {
