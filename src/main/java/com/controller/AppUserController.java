@@ -72,7 +72,9 @@ public class AppUserController {
                 DecodedJWT decodedJWT = verifier.verify(refresh_token);
                 // get username and roles from the decoded jwt token and save to appUser
                 String username = decodedJWT.getSubject();
+                // find user in the database
                 AppUser user = appUserService.getAppUserByName(username);
+                // write new access token for the found user
                 String access_token = JWT.create()
                         .withSubject(user.getUsername())
                         .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
