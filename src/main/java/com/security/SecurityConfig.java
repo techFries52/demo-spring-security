@@ -1,6 +1,7 @@
 package com.security;
 
-import com.filter.CustomAuthFilter;
+import com.filter.CustomAuthenticationFilter;
+import com.filter.CustomAuthorizationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -31,7 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
 
         // creates custom auth filter to change the default /login for querying to /api/login
-        CustomAuthFilter customAuthFilter = new CustomAuthFilter(authenticationManagerBean());
+        CustomAuthenticationFilter customAuthFilter = new CustomAuthenticationFilter(authenticationManagerBean());
         customAuthFilter.setFilterProcessesUrl("/api/login");
 
         // disable cross site request forgery, springs default session?
@@ -56,6 +58,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // or if we have overriden the default path
         http.addFilter(customAuthFilter);
+        http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean

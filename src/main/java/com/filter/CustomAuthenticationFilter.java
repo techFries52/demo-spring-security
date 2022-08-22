@@ -17,7 +17,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,13 +25,13 @@ import java.util.stream.Collectors;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
-public class CustomAuthFilter extends UsernamePasswordAuthenticationFilter {
+public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     // brought in to authenticate the user
     private final AuthenticationManager authenticationManager;
 
     // constructor injection of authentication manager
-    public CustomAuthFilter(AuthenticationManager authenticationManager){
+    public CustomAuthenticationFilter(AuthenticationManager authenticationManager){
         this.authenticationManager = authenticationManager;
     }
 
