@@ -70,6 +70,12 @@ public class AppUserServiceImpl implements AppUserService, UserDetailsService {
     }
 
     @Override
+    public AppUser getAppUserByName(String name) {
+        log.info("fetching user {} by name", name);
+        return appUserRepo.findByName(name);
+    }
+
+    @Override
     public List<AppUser> getUsers() {
         log.info("fetching all users");
         return appUserRepo.findAll();

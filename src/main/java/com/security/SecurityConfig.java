@@ -45,7 +45,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         //http.authorizeRequests().anyRequest().permitAll();
 
         // lets everyone access this specific url
-        http.authorizeRequests().antMatchers( "/api/login/**").permitAll();
+        http.authorizeRequests().antMatchers( "/api/login/**", "/api/token/refresh/**").permitAll();
         // lets principals with user role access this api route
         http.authorizeRequests().antMatchers(GET, "/api/users/**").hasAnyAuthority("ROLE_USER");
         // lets principals with admin role access this api route
