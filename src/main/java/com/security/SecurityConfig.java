@@ -53,6 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         // adds our default filter so we can check who is logging in
         // http.addFilter(new CustomAuthFilter(authenticationManagerBean()));
+
         // or if we have overriden the default path
         http.addFilter(customAuthFilter);
     }
