@@ -3,6 +3,7 @@ package com.filter;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.util.TokenWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,9 +31,12 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     // brought in to authenticate the user
     private final AuthenticationManager authenticationManager;
 
+    private final TokenWriter tokenWriter;
+
     // constructor injection of authentication manager
-    public CustomAuthenticationFilter(AuthenticationManager authenticationManager){
+    public CustomAuthenticationFilter(AuthenticationManager authenticationManager, TokenWriter tokenWriter){
         this.authenticationManager = authenticationManager;
+        this.tokenWriter = tokenWriter;
     }
 
     @Override
@@ -62,19 +66,9 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
 
         // creating access token with username, setting expiration, with the request url, with roles
-        String access_token = JWT.create()
-                .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
-                .withIssuer(request.getRequestURL().toString())
-                .withClaim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-                .sign(algorithm);
-
+        String access_token = tokenWriter.createAccessToken(request, algorithm, user);
         // creating refresh token with username, setting expiration
-        String refresh_token = JWT.create()
-                .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 30 * 60 * 1000))
-                .withIssuer(request.getRequestURL().toString())
-                .sign(algorithm);
+        String refresh_token = tokenWriter.createRefreshToken(request,algorithm,user);
 
         // assigning access token and refresh token to the headers of the response
         // response.setHeader("access_token", access_token);

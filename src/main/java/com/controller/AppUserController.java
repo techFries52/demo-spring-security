@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.models.AppUser;
 import com.models.Role;
 import com.service.AppUserService;
+import com.util.TokenWriter;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping("/api")
 public class AppUserController {
     private final AppUserService appUserService;
+    private final TokenWriter tokenWriter;
 
     @GetMapping("/users")
     public ResponseEntity<List<AppUser>> getUsers(){
@@ -75,12 +77,13 @@ public class AppUserController {
                 // find user in the database
                 AppUser user = appUserService.getAppUserByName(username);
                 // write new access token for the found user
-                String access_token = JWT.create()
-                        .withSubject(user.getUsername())
-                        .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
-                        .withIssuer(request.getRequestURL().toString())
-                        .withClaim("roles", user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
-                        .sign(algorithm);
+                String access_token = tokenWriter.createAccessTokenWithAppUser(request, algorithm, user);
+//                String access_token = JWT.create()
+//                        .withSubject(user.getUsername())
+//                        .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
+//                        .withIssuer(request.getRequestURL().toString())
+//                        .withClaim("roles", user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
+//                        .sign(algorithm);
                 // assign tokens to a Map and assign to the response body
                 Map<String,String> tokens = new HashMap<>();
                 tokens.put("access_token", access_token);
