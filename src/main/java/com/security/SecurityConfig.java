@@ -1,5 +1,6 @@
 package com.security;
 
+import com.filter.CustomAuthenticationEntryPoint;
 import com.filter.CustomAuthenticationFilter;
 import com.filter.CustomAuthorizationFilter;
 import com.util.TokenWriter;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static org.springframework.http.HttpMethod.GET;
@@ -59,7 +61,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // http.addFilter(new CustomAuthFilter(authenticationManagerBean()));
 
         // or if we have overriden the default path
-        http.addFilter(customAuthFilter);
+        http.addFilter(customAuthFilter).exceptionHandling().authenticationEntryPoint(authenticationEntryPoint());
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
@@ -67,5 +69,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint(){
+        return new CustomAuthenticationEntryPoint();
     }
 }
