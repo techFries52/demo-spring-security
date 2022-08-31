@@ -23,8 +23,7 @@ import java.util.Map;
 
 import static java.util.Arrays.stream;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
@@ -34,13 +33,16 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
         if(request.getServletPath().equals("/api/login") || request.getServletPath().equals("/api/token/refresh")){
             // if user is trying to log in, do nothing and allow user to log in
+            log.info("user trying to login: CustomAuthorizationFilter");
             filterChain.doFilter(request,response);
         } else {
             // get authorization header
             String authorizationHeader = request.getHeader(AUTHORIZATION);
-
+            log.info("path was not login or refresh");
+            log.info("checking authorization header is not null and starts with Bearer ");
             if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
                 try {
+                    log.info("enters try block in CustomAuthorizationFilter");
                     // gets headers
                     String token = authorizationHeader.substring("Bearer ".length());
                     Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
@@ -61,11 +63,13 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     // tells spring security: here is the user and their roles and what they can do
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     // lets the request continue on its course
+                    log.info("response status: {}",response.getStatus());
                     filterChain.doFilter(request,response);
                 } catch (Exception exception){
+                    log.info("enters catch block in CustomAuthorizationFilter");
                     log.error("Error logging in: {}", exception.getMessage());
                     response.setHeader("error", exception.getMessage());
-                    response.setStatus(NOT_FOUND.value());
+                    response.setStatus(UNAUTHORIZED.value());
                     // response.sendError(FORBIDDEN.value()); // error 403
 
                     Map<String,String> error = new HashMap<>();

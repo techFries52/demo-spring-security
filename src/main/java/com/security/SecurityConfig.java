@@ -1,10 +1,12 @@
 package com.security;
 
+import com.exceptions.CustomAccessDeniedHandler;
 import com.filter.CustomAuthenticationEntryPoint;
 import com.filter.CustomAuthenticationFilter;
 import com.filter.CustomAuthorizationFilter;
 import com.util.TokenWriter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,12 +23,14 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
-@Configuration @EnableWebSecurity @RequiredArgsConstructor
+@Configuration @EnableWebSecurity @RequiredArgsConstructor @Slf4j
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final TokenWriter tokenWriter;
+    private final AuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -51,9 +55,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // lets everyone access this specific url
         http.authorizeRequests().antMatchers( "/api/login/**", "/api/token/refresh/**").permitAll();
         // lets principals with user role access this api route
-        http.authorizeRequests().antMatchers(GET, "/api/users/**").hasAnyAuthority("ROLE_USER");
-        // lets principals with admin role access this api route
-        http.authorizeRequests().antMatchers(POST, "/api/user/save").hasAnyAuthority("ROLE_ADMIN");
+        http.authorizeRequests().antMatchers(GET, "/api/users/**").hasAnyAuthority("USER");
+        // lets principals with admin role access this api route and sends incorrect permissions to customAccessDeniedHandler
+        http.authorizeRequests().antMatchers(POST, "/api/user/save").hasAnyAuthority("ADMIN").and().exceptionHandling().accessDeniedHandler(accessDeniedHandler);
+
 
         http.authorizeRequests().anyRequest().authenticated();
 
@@ -61,7 +66,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // http.addFilter(new CustomAuthFilter(authenticationManagerBean()));
 
         // or if we have overriden the default path
-        http.addFilter(customAuthFilter).exceptionHandling().authenticationEntryPoint(authenticationEntryPoint());
+        http.addFilter(customAuthFilter);
+        // allows custom accessDeniedHandler
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
