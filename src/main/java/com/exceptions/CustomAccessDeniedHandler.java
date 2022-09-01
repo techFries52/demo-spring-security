@@ -27,22 +27,40 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication != null){
-            log.info("User '" + authentication.getName() + "' attempted to access the URL: " + request.getRequestURI() + " with incorrect permissions");
-        }
-
-        Map<String, Object> body = new HashMap<String, Object>();
-        body.put("error", "UNAUTHORIZED");
-        body.put("message", "User does not have permissions to access");
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.UNAUTHORIZED.value());
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        // creating Object Mapper to write output stream of Http Response
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // creating Map to write to Http Response
+        Map<String, Object> body = new HashMap<String, Object>();
 
-        objectMapper.writeValue(response.getOutputStream(),body);
+        if(authentication != null) {
+            log.info("User '" + authentication.getName() + "' attempted to access the URL: " + request.getRequestURI() + " with incorrect permissions");
+
+            // assigning values to Map for Http Response
+            body.put("error", "UNAUTHORIZED");
+            body.put("message", "User does not have permissions to access");
+            body.put("timestamp", LocalDateTime.now());
+            body.put("status", HttpStatus.UNAUTHORIZED.value());
+
+            // setting content of Http Response
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            objectMapper.writeValue(response.getOutputStream(), body);
+        } else {
+            log.info("Authentication returned null, cannot authenticate user");
+
+            // assigning values to Map for Http Response
+            body.put("error", "UNAUTHORIZED");
+            body.put("message", "User could not be verified");
+            body.put("timestamp", LocalDateTime.now());
+            body.put("status", HttpStatus.UNAUTHORIZED.value());
+
+            // setting content of Http Response
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            objectMapper.writeValue(response.getOutputStream(), body);
+        }
         // response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
     }
 }
