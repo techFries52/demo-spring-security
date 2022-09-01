@@ -57,7 +57,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // lets principals with user role access this api route and sends incorrect permissions to customAccessDeniedHandler
         http.authorizeRequests()
                 .antMatchers(GET, "/api/users/**")
-                .hasAnyAuthority("USER")
+                .hasAnyAuthority("ROLE_USER")
                 .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler);
@@ -65,7 +65,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // lets principals with admin role access this api route and sends incorrect permissions to customAccessDeniedHandler
         http.authorizeRequests()
                 .antMatchers(POST, "/api/user/save")
-                .hasAnyAuthority("ADMIN")
+                .hasAnyAuthority("ROLE_ADMIN")
                 .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler);
