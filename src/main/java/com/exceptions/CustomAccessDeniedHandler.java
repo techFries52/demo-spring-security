@@ -27,12 +27,12 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
-        // creating Object Mapper to write output stream of Http Response
+        // creating Object Mapper to write output stream of Http Response,
+        // adds JavaTimeModule to ObjectMapper, instantiates new Map
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // creating Map to write to Http Response
         Map<String, Object> body = new HashMap<String, Object>();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if(authentication != null) {
             log.info("User '" + authentication.getName() + "' attempted to access the URL: " + request.getRequestURI() + " with incorrect permissions");

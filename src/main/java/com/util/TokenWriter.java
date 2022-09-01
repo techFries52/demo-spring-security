@@ -14,22 +14,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.stream.Collectors;
+
 @Component
 public class TokenWriter {
 
-
     public String createAccessToken(HttpServletRequest request,Algorithm algorithm, User user) {
-        // creating access token with username, setting expiration, with the request url, with roles
+        // creating access token from Spring Security User
         return JWT.create()
                 .withSubject(user.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
                 .withIssuer(request.getRequestURL().toString())
                 .withClaim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .sign(algorithm);
-
     }
 
     public String createAccessTokenWithAppUser (HttpServletRequest request, Algorithm algorithm, AppUser user){
+        // creates access token from AppUser
          return JWT.create()
                  .withSubject(user.getUsername())
                  .withExpiresAt(new Date(System.currentTimeMillis() + 10 * 60 * 1000))
@@ -39,7 +39,7 @@ public class TokenWriter {
     }
 
     public String createRefreshToken(HttpServletRequest request, Algorithm algorithm, User user){
-        // creating refresh token with username, setting expiration
+        // creating refresh token from Spring Security User
         return JWT.create()
                 .withSubject(user.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + 30 * 60 * 1000))
