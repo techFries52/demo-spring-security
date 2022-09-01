@@ -49,15 +49,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // sets session creation policy to stateless
         http.sessionManagement().sessionCreationPolicy(STATELESS);
 
-        // lets everyone access any endpoint on this application
-        //http.authorizeRequests().anyRequest().permitAll();
-
         // lets everyone access this specific url
         http.authorizeRequests()
                 .antMatchers( "/api/login/**", "/api/token/refresh/**")
                 .permitAll();
 
-        // lets principals with user role access this api route
+        // lets principals with user role access this api route and sends incorrect permissions to customAccessDeniedHandler
         http.authorizeRequests()
                 .antMatchers(GET, "/api/users/**")
                 .hasAnyAuthority("USER")
@@ -84,6 +81,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilter(customAuthenticationFilter);
         // adds custom Authorization filter / allows custom accessDeniedHandler
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+
+
+        // lets everyone access any endpoint on this application
+        //http.authorizeRequests().anyRequest().permitAll();
     }
 
     @Bean

@@ -28,12 +28,10 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    // brought in to authenticate the user
     private final AuthenticationManager authenticationManager;
-
     private final TokenWriter tokenWriter;
 
-    // constructor injection of authentication manager
+    // constructor injection of AuthenticationManager and TokenWriter
     public CustomAuthenticationFilter(AuthenticationManager authenticationManager, TokenWriter tokenWriter){
         this.authenticationManager = authenticationManager;
         this.tokenWriter = tokenWriter;
@@ -57,7 +55,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         // can use Object mapper instead of doing it like this too
     }
 
-    // this method gets called when authentication is successful
+
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authenitcation) throws IOException, ServletException {
         // getting User (Spring security User) from authentication
@@ -65,14 +63,9 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         // getting Byte algorithm from Java JWT dependency
         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
 
-        // creating access token with username, setting expiration, with the request url, with roles
+        // creating access token and refresh token
         String access_token = tokenWriter.createAccessToken(request, algorithm, user);
-        // creating refresh token with username, setting expiration
         String refresh_token = tokenWriter.createRefreshToken(request,algorithm,user);
-
-        // assigning access token and refresh token to the headers of the response
-        // response.setHeader("access_token", access_token);
-        // response.setHeader("refresh_token", refresh_token);
 
         // assign tokens to a Map and assign to the response body
         Map<String,String> tokens = new HashMap<>();
@@ -80,6 +73,10 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         tokens.put("refresh_token", refresh_token);
         response.setContentType(APPLICATION_JSON_VALUE);
         new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+
+        // assigning access token and refresh token to the headers of the response
+        // response.setHeader("access_token", access_token);
+        // response.setHeader("refresh_token", refresh_token);
     }
 
 
