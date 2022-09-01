@@ -41,8 +41,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
 
         // creates custom auth filter to change the default /login for querying to /api/login
-        CustomAuthenticationFilter customAuthFilter = new CustomAuthenticationFilter(authenticationManagerBean(), tokenWriter);
-        customAuthFilter.setFilterProcessesUrl("/api/login");
+        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean(), tokenWriter);
+        customAuthenticationFilter.setFilterProcessesUrl("/api/login");
 
         // disable cross site request forgery, springs default session?
         http.csrf().disable();
@@ -53,21 +53,36 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         //http.authorizeRequests().anyRequest().permitAll();
 
         // lets everyone access this specific url
-        http.authorizeRequests().antMatchers( "/api/login/**", "/api/token/refresh/**").permitAll();
+        http.authorizeRequests()
+                .antMatchers( "/api/login/**", "/api/token/refresh/**")
+                .permitAll();
+
         // lets principals with user role access this api route
-        http.authorizeRequests().antMatchers(GET, "/api/users/**").hasAnyAuthority("USER");
+        http.authorizeRequests()
+                .antMatchers(GET, "/api/users/**")
+                .hasAnyAuthority("USER")
+                .and()
+                .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler);
+
         // lets principals with admin role access this api route and sends incorrect permissions to customAccessDeniedHandler
-        http.authorizeRequests().antMatchers(POST, "/api/user/save").hasAnyAuthority("ADMIN").and().exceptionHandling().accessDeniedHandler(accessDeniedHandler);
+        http.authorizeRequests()
+                .antMatchers(POST, "/api/user/save")
+                .hasAnyAuthority("ADMIN")
+                .and()
+                .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler);
 
-
-        http.authorizeRequests().anyRequest().authenticated();
+        http.authorizeRequests()
+                .anyRequest()
+                .authenticated();
 
         // adds our default filter so we can check who is logging in
         // http.addFilter(new CustomAuthFilter(authenticationManagerBean()));
 
-        // or if we have overriden the default path
-        http.addFilter(customAuthFilter);
-        // allows custom accessDeniedHandler
+        // adds custom Authentication filter / overrides the default path
+        http.addFilter(customAuthenticationFilter);
+        // adds custom Authorization filter / allows custom accessDeniedHandler
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 

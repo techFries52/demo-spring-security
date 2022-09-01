@@ -63,21 +63,23 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     // tells spring security: here is the user and their roles and what they can do
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     // lets the request continue on its course
-                    log.info("response status: {}",response.getStatus());
+                    // if auth fails at next step it will go to access denied handler
                     filterChain.doFilter(request,response);
                 } catch (Exception exception){
-                    log.info("enters catch block in CustomAuthorizationFilter");
-                    log.error("Error logging in: {}", exception.getMessage());
+                    log.error("Failure to Authorize user, Error logging in: {}", exception.getMessage());
+
+                    // setting Response variables
                     response.setHeader("error", exception.getMessage());
                     response.setStatus(UNAUTHORIZED.value());
-                    // response.sendError(FORBIDDEN.value()); // error 403
 
+                    // creates Map to write to Response Body with new Object Mapper
                     Map<String,String> error = new HashMap<>();
                     error.put("error_message", exception.getMessage());
                     response.setContentType(APPLICATION_JSON_VALUE);
                     new ObjectMapper().writeValue(response.getOutputStream(), error);
                 }
             } else {
+                log.info("Authorization Header was null or did not start with 'Bearer '");
                 filterChain.doFilter(request,response);
             }
         }
